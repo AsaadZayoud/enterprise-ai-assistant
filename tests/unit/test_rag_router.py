@@ -1,7 +1,7 @@
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from backend.app.routers.rag import router
 
 # 1. Setup the FastAPI app and attach the RAG router
@@ -37,23 +37,28 @@ def test_embed_texts_success(mock_generate_embeddings):
 # ------------------------------------------------------------------
 # Test 2: POST /rag/search
 # ------------------------------------------------------------------
+@patch("backend.app.routers.rag.get_client")
 @patch("backend.app.routers.rag.search_documents")
 @patch("backend.app.routers.rag.generate_embeddings")
-def test_search_relevant_chunks_success(mock_generate_embeddings, mock_search_documents):
+def test_search_relevant_chunks_success(mock_generate_embeddings, mock_search_documents, mock_get_client):
     """
     Test vector search endpoint returns matching chunks.
     """
     # Arrange
+    # Mock Langfuse client to prevent tracing errors during test execution
+    mock_langfuse_client = MagicMock()
+    mock_get_client.return_value = mock_langfuse_client
+
     mock_generate_embeddings.return_value = [[0.1, 0.2, 0.3]]
     mock_search_documents.return_value = {
         "documents": [["Chunk text 1", "Chunk text 2"]],
         "metadatas": [[{"filename": "doc1.pdf"}, {"filename": "doc2.pdf"}]]
     }
     payload = {"query": "What is vector database?", "n_results": 2}
-
+    
     # Act
     response = client.post("/rag/search", json=payload)
-
+    
     # Assert
     assert response.status_code == 200
     data = response.json()
