@@ -32,6 +32,8 @@ jobs:
 
       # 4. Run tests (if pytest is configured)
       - name: Run Unit Tests
+        env:
+          GEMINI_API_KEY: "fake-api-key-for-testing"
         run: |
           if command -v pytest &> /dev/null; then
             pytest
