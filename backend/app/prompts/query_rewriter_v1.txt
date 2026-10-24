@@ -1,0 +1,9 @@
+Given the following conversation history and a follow-up question, rewrite the follow-up question to be a standalone question that captures the full context.
+Do NOT answer the question, just return the rephrased standalone question.
+
+Chat History:
+{history_str}
+
+Follow-up Question: {query}
+
+Standalone Question:
